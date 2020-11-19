@@ -43,19 +43,39 @@ class Notifier_Dispatch(hass.Hass):
 
         self.sensor = self.args.get("sensor")
         self.set_state(self.sensor, state="on")
-
+#### FROM SECRET FILE ###
         config = self.get_plugin_config()
         config_dir = config["config_dir"]
         self.log(f"configuration dir: {config_dir}")
-        secretsFile = config_dir + "/packages/secrets.yaml"
-        with open(secretsFile, "r") as ymlfile:
-            cfg = yaml.load(ymlfile, Loader=yaml.FullLoader)  # yaml.safe_load
+        secretsFile = config_dir + "/secrets.yaml"
+        secretsFilePkg = config_dir + "/packages/secrets.yaml"
+        cfg = {}
+        # with open(secretsFile, "r") as ymlfile:
+        #     cfg = yaml.load(ymlfile, Loader=yaml.FullLoader)  # yaml.safe_load
+        # self.gh_tts = cfg.get("tts_google", "google_translate_say")
+        # self.gh_notify = cfg.get("notify_google", "google_assistant")
+        # self.phone_sip_server = cfg.get("sip_server_name", "fritz.box:5060")
+        # self.gh_tts_cloud = cfg.get("tts_google_cloud", "google_cloud")
+        # self.reverso_tts = cfg.get("reverso_tts", "reversotts_say")
+        try:
+            with open(secretsFilePkg, "r") as ymlfile:
+                cfg = yaml.load(ymlfile, Loader=yaml.FullLoader)  # yaml.safe_load
+        except:
+            self.log("Nessun secret in packages")
+            try:
+                with open(secretsFile, "r") as ymlfile:
+                    cfg = yaml.load(ymlfile, Loader=yaml.FullLoader)  # yaml.safe_load
+            except:
+                self.log("Nessun secret in config")
+            finally:
+                    if not cfg:
+                        self.log("Nessun dato trovato, uso quelli di default") 
         self.gh_tts = cfg.get("tts_google", "google_translate_say")
         self.gh_notify = cfg.get("notify_google", "google_assistant")
         self.phone_sip_server = cfg.get("sip_server_name", "fritz.box:5060")
         self.gh_tts_cloud = cfg.get("tts_google_cloud", "google_cloud")
         self.reverso_tts = cfg.get("reverso_tts", "reversotts_say")
-
+ 
         ### APP MANAGER ###
         self.notification_manager = self.get_app("Notification_Manager")
         self.gh_manager = self.get_app("GH_Manager")
@@ -92,8 +112,7 @@ class Notifier_Dispatch(hass.Hass):
                 else:
                     flag = True
             else:
-                dizionario = data if isinstance(data, dict) else eval(data)  
-                # dizionario = eval(data)  # convert to dict
+                dizionario = data if isinstance(data, dict) else eval(data) #eval(data)
                 if dizionario.get("mode") != None:
                     flag = self.check_flag(dizionario["mode"])
                 else:
@@ -103,9 +122,9 @@ class Notifier_Dispatch(hass.Hass):
     def notify_hub(self, event_name, data, kwargs):
         self.log("#### START NOTIFIER_DISPATCH ####")
 
-        if 'data' in data:
+        if 'data' in data: # TEST NOTIFY
             # data.pop('message', None)
-            data = dict(data, **data['data'])
+            data = dict(data, **data['data']) # END TEST NOTIFY
 
         location_status = self.get_state(self.location_tracker)
         ### FLAG
