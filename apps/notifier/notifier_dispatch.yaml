@@ -21,6 +21,7 @@ Notifier_Dispatch:
   persistent_notification_info: persistent_notification.info_messages
   
   location_tracker: group.location_tracker
+  # location_tracker: binary_sensor.people_home
   text_notify: input_select.text_notify
   phone_notify: input_select.phone_notify
   priority_message: input_boolean.priority_message
